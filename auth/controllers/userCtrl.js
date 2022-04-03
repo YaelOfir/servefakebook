@@ -71,8 +71,8 @@ const userCtrl = {
         password,
       });
 
-       await newUser.save()
-       //.then(() => {
+      await newUser.save();
+      //.then(() => {
       //   axios.post("http://localhost:4005/events", {
       //     type: "UserCreated",
       //     data: {
@@ -191,7 +191,7 @@ const userCtrl = {
         { _id: req.user.id },
         {
           name,
-          city: req.user.city,
+          city,
           avatar,
         }
       );

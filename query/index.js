@@ -1,104 +1,127 @@
 const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const axios = require("axios");
-const { startConnection } = require("./mongoConfig/connection");
-const Post = require("./models/post.js");
-const User = require("./models/user.js");
 const app = express();
-app.use(bodyParser.json());
+const bodyParser = require("body-parser");
+const postRouter = require("./routes/post.routes");
+require("dotenv").config();
+const { startConnection } = require("./mongoConfig/connection");
+const PORT = process.env.PORT;
+
+const cors = require("cors");
 app.use(cors());
+app.use(bodyParser.json());
+app.use(express.json());
+
 startConnection();
+app.use("/", postRouter);
 
-const posts = {};
-
-const handleEvent = (type, data) => {
-  if (type === "profileByName") {
-    // try {
-    //   const user = User.findOne({ username: req.params.username });
-    //   const posts = Post.find({ userId: user._id });
-    //   data.status(200).json(posts);
-    // } catch (err) {
-    //   data.status(500).json(err);
-    // }
-  }
-
-  if (type === "getTimeline") {
-    // try {
-    //   const currentUser = User.findById(req.params.userId);
-    //   const userPosts = Post.find({ userId: currentUser._id });
-    //   const friendPosts = Promise.all(
-    //     currentUser.followings.map((friendId) => {
-    //       return Post.find({ userId: friendId });
-    //     })
-    //   );
-    //   res.status(200).json(userPosts.concat(...friendPosts));
-    // } catch (err) {
-    //   res.status(500).json(err);
-    //}
-  }
-
-  if (type === "PostCreated") {
-    // const { id, title } = data;
-    // posts[id] = { id, title, comments: [] };
-  }
-
-  if (type === "CommentCreated") {
-    const { id, content, postId, status } = data;
-
-    const post = posts[postId];
-    post.comments.push({ id, content, status });
-  }
-
-  if (type === "CommentUpdated") {
-    const { id, content, postId, status } = data;
-
-    const post = posts[postId];
-    const comment = post.comments.find((comment) => {
-      return comment.id === id;
-    });
-
-    comment.status = status;
-    comment.content = content;
-  }
-};
-
-app.get("/posts", (req, res) => {
-  res.send(posts);
+app.listen(PORT, () => {
+  console.log(`Query server on: ${PORT}`);
 });
 
-app.post("/events", (req, res) => {
-  const { type, data } = req.body;
+// const express = require("express");
+// const bodyParser = require("body-parser");
+// const cors = require("cors");
+// const axios = require("axios");
+// const { startConnection } = require("./mongoConfig/connection");
+// const Post = require("./models/post.js");
+// const User = require("./models/user.js");
+// const app = express();
+// app.use(bodyParser.json());
+// app.use(cors());
+// startConnection();
 
-  handleEvent(type, data);
+// const posts = {};
 
-  res.send({});
-});
+// const handleEvent = (type, data) => {
+//   if (type === "LikedPost") {
+//   }
 
-const server = app.listen(4002, async () => {
-  console.log("query server 4002");
-  try {
-    const res = await axios.get("http://localhost:4005/events");
+//   if (type === "profileByName") {
+//     // try {
+//     //   const user = User.findOne({ username: req.params.username });
+//     //   const posts = Post.find({ userId: user._id });
+//     //   data.status(200).json(posts);
+//     // } catch (err) {
+//     //   data.status(500).json(err);
+//     // }
+//   }
 
-    for (let event of res.data) {
-      console.log("Processing event: ", event.type);
+//   if (type === "getTimeline") {
+//     // try {
+//     //   const currentUser = User.findById(req.params.userId);
+//     //   const userPosts = Post.find({ userId: currentUser._id });
+//     //   const friendPosts = Promise.all(
+//     //     currentUser.followings.map((friendId) => {
+//     //       return Post.find({ userId: friendId });
+//     //     })
+//     //   );
+//     //   res.status(200).json(userPosts.concat(...friendPosts));
+//     // } catch (err) {
+//     //   res.status(500).json(err);
+//     //}
+//   }
 
-      handleEvent(event.type, event.data);
-    }
-  } catch (error) {
-    console.log(error.message);
-  }
-});
+//   if (type === "PostCreated") {
+//     // const { id, title } = data;
+//     // posts[id] = { id, title, comments: [] };
+//   }
 
-// const io = require("socket.io");
-// const jwt = require("jwt-then");
+//   if (type === "CommentCreated") {
+//     const { id, content, postId, status } = data;
 
-// io.use((socket, next) => {
-//   const token = socket.handshake.query.token;
+//     const post = posts[postId];
+//     post.comments.push({ id, content, status });
+//   }
 
+//   if (type === "CommentUpdated") {
+//     const { id, content, postId, status } = data;
+
+//     const post = posts[postId];
+//     const comment = post.comments.find((comment) => {
+//       return comment.id === id;
+//     });
+
+//     comment.status = status;
+//     comment.content = content;
+//   }
+// };
+
+// app.get("/posts", (req, res) => {
+//   res.send(posts);
+// });
+
+// app.post("/events", (req, res) => {
+//   const { type, data } = req.body;
+
+//   handleEvent(type, data);
+
+//   res.send({});
+// });
+
+// const server = app.listen(4002, async () => {
+//   console.log("query server 4002");
 //   try {
+//     const res = await axios.get("http://localhost:4005/events");
 
-//   } catch (err) {
-//     res.status(401).json({ message: "Forbidden" });
+//     for (let event of res.data) {
+//       console.log("Processing event: ", event.type);
+
+//       handleEvent(event.type, event.data);
+//     }
+//   } catch (error) {
+//     console.log(error.message);
 //   }
 // });
+
+// // const io = require("socket.io");
+// // const jwt = require("jwt-then");
+
+// // io.use((socket, next) => {
+// //   const token = socket.handshake.query.token;
+
+// //   try {
+
+// //   } catch (err) {
+// //     res.status(401).json({ message: "Forbidden" });
+// //   }
+// // });

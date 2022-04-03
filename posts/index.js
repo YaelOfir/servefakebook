@@ -4,20 +4,22 @@ const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const axios = require("axios");
-const { startConnection } = require("./mongoConfig/connection");
 const Post = require("./model/Post");
 const User = require("./model/userModel");
-const mongoose = require("mongoose");
 const helmet = require("helmet");
 const morgan = require("morgan");
+const postRouter = require("./router/postroutes.js");
 const multer = require("multer");
 const path = require("path");
 const app = express();
+const container = require("./containerConfig");
+const rabbitMqHandler = container.resolve("rabbitMqHandler");
+
 dotenv.config();
+rabbitMqHandler.init();
 
 app.use(cors());
-startConnection();
-app.use("/images", express.static(path.join(__dirname, "public/images")));
+app.use("/images", express.static(path.join(__dirname, "./public/images")));
 
 //middlewear
 app.use(express.json());
@@ -34,13 +36,14 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
-app.post("/api/upload", upload.single("file"), (req, res) => {
-  try {
-    return res.status(200).json("File uploded successfully");
-  } catch (error) {
-    console.error(error);
-  }
-});
+app.use("/Post", postRouter);
+// app.post("/api/upload/", upload.single("file"), (req, res) => {
+//   try {
+//     return res.status(200).json("File uploded successfully");
+//   } catch (error) {
+//     console.error(error);
+//   }
+// });
 
 const posts = {};
 
@@ -50,7 +53,7 @@ app.get("/posts", (req, res) => {
 
 app.post("/create", async (req, res) => {
   var post = {
-    userId: mongoose.Types.ObjectId(req.body.userId),
+    //userId: mongoose.Types.ObjectId(req.body.userId),
     title: req.body.title,
     img: req.body.img,
     likes: req.body.likes,
@@ -109,7 +112,7 @@ app.delete("/:id", async (req, res) => {
   }
 });
 
-app.put("post/:id/like", async (req, res) => {
+app.get("/like/:id", async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
     const likedPost = post.updateOne({ $push: { likes: req.body.userId } });

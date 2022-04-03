@@ -22,6 +22,20 @@ const PostSchema = new mongoose.Schema(
       type: Array,
       default: [],
     },
+    
+    rating: {
+      type: Number,
+      require: true,
+      min: 0,
+      max: 5,
+    },
+    lat: {
+      type: Number,
+    },
+    long: {
+      type: Number,
+    },
+  
   },
   { timestamps: true }
 );

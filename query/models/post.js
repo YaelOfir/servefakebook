@@ -13,15 +13,17 @@ const PostSchema = new mongoose.Schema(
     img: {
       type: String,
     },
-    likes: {
-      type: Array,
+    likes: [{
+      type: mongoose.Schema.Types.ObjectId,
       default: [],
-    },
-    comments: [{
-      type: Array,
-      default: [],
-      ref: "Comment",
     }],
+    comments: [
+      {
+        type: Array,
+        default: [],
+        ref: "Comment",
+      },
+    ],
   },
   { timestamps: true }
 );
